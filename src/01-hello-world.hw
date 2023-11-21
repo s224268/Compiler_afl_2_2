@@ -10,6 +10,7 @@ Oscillator -> OscillatorM
 
 Oscillator = !OscillatorM && !Reset
 
+
 .simulate
 Reset=0000100
 

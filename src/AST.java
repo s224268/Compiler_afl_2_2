@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+
 public abstract class AST{
     public void error(String msg){
 	System.err.println(msg);
@@ -54,10 +55,19 @@ class Negation extends Expr{
 }
 
 class Signal extends Expr{
-
     String varname; // a signal is just identified by a name
     Signal(String varname){this.varname=varname;}
     public boolean eval(Environment env){
+
+        if (varname.equals(Singleton.getInstance().getStr())){
+            throw new IllegalArgumentException("Circular definitio of " + varname);
+        }
+        if (!Singleton.getInstance().getEnvironment().hasVariable(varname)){
+            System.out.println(Singleton.getInstance().getEnvironment() + "\n\n\n");
+
+            throw new IllegalArgumentException("Variable " + varname + " is not previously given a value");
+        }
+
         return env.getVariable(varname);
     }
 }
@@ -115,18 +125,17 @@ class Trace extends AST{
         finished_string.append(" ").append(signal);
         return finished_string.append("\n").toString();
     }
-
 }
 
 /* The main data structure of this simulator: the entire circuit with
    its inputs, outputs, latches, and updates. Additionally for each
-   input signal, it has a Trace as simulation input. 
-   
+   input signal, it has a Trace as simulation input.
+
    There are two variables that are not part of the abstract syntax
    and thus not initialized by the constructor (so far): simoutputs
    and simlength. It is suggested to use them for assignment 2 to
    implement the interpreter:
- 
+
    1. to have simlength as the length of the traces in siminputs. (The
    simulator should check they have all the same length and stop with
    an error otherwise.) Now simlength is the number of simulation
@@ -138,7 +147,7 @@ class Trace extends AST{
 */
 
 class Circuit extends AST{
-    String name; 
+    String name;
     List<String> inputs;
     List<String> outputs;
     List<Latch>  latches;
@@ -185,6 +194,57 @@ class Circuit extends AST{
                 throw new IllegalArgumentException("ERROR: TRACES NOT SAME LENGTH");
             }
         }
+        ////////////////////////////////////////////////////////
+        //Making sure that each signal is only one of the following
+
+        Environment environmentForSignals = new Environment();
+        Environment environmentForUpdates = new Environment();
+        Environment environmentForLatches = new Environment();
+
+        for (String varName : inputs) {
+            environmentForSignals.setVariable(varName, false);
+            Singleton.getInstance().getEnvironment().setVariable(varName, false);
+        }
+
+        for (Latch latch : latches){
+            environmentForLatches.setVariable(latch.outputname, false);
+            Singleton.getInstance().getEnvironment().setVariable(latch.outputname, false);
+        }
+
+        for (Update update : updates){
+            environmentForUpdates.setVariable(update.name, false);
+        }
+
+        for (String varName : inputs) {
+            if (environmentForLatches.hasVariable(varName) || environmentForUpdates.hasVariable(varName)){
+                throw new IllegalArgumentException("Signal redefinition error");
+            }
+        }
+
+        for (Latch latch : latches){
+            if(environmentForUpdates.hasVariable(latch.outputname))
+                throw new IllegalArgumentException("Signal redefinition error");
+        }
+
+        //////////////////////////////////////////////////////////
+        //Checking for cycling redifinition
+
+        environmentForSignals = new Environment();
+        environmentForUpdates = new Environment();
+        environmentForLatches = new Environment();
+
+        //Idk if this thing is legal?
+        for (Latch latch : latches){
+            if (latch.outputname.equals(latch.inputname)){
+                throw new IllegalArgumentException("Cyclic updates at latch: " + latch.inputname);
+            }
+        }
+
+
+
+
+
+
         //////////////////////////////////////////////////////
         //Initialization
 
@@ -201,6 +261,15 @@ class Circuit extends AST{
             update.eval(env);
         }
         simlength = siminputs.get(0).values.length;
+        if (simlength == 0){
+            throw new IllegalArgumentException("Simulated input length was zero");
+        }
+
+        for (Trace t : siminputs){
+            if (t.values.length != simlength){
+                throw new IllegalArgumentException("Lengths of simulated inputs do not match");
+            }
+        }
         for (String varName : outputs){
             simoutputs.add(new Trace(varName, new Boolean[simlength]));
         }
@@ -226,6 +295,8 @@ class Circuit extends AST{
         }
 
         for (Update update : updates){
+            Singleton.getInstance().getEnvironment().setVariable(update.name, false);
+            Singleton.getInstance().setStr(update.name);
             update.eval(env);
         }
         for (Latch latch : latches){
@@ -237,11 +308,6 @@ class Circuit extends AST{
             t.values[i] = env.getVariable(outputs.get(k));
             k++;
         }
-
-        System.out.println("----------------------------------------------------------------------------------------");
-        System.out.println(env.toString());
-        System.out.println("----------------------------------------------------------------------------------------");
-
     }
 
     void runSimulator(Environment env){
@@ -249,16 +315,18 @@ class Circuit extends AST{
 
         for (int i = 0; i < simlength; i++) {
             nextCycle(env, i);
-            System.out.println(env.toString());
         }
-        System.out.println(simoutputs.size());
+
+
         for (Trace t : siminputs){
-            System.out.println(t.toString(env));
+            System.out.print(t.toString(env));
         }
         for (Trace t : simoutputs){
-            System.out.println(t.toString(env));
+            System.out.print(t.toString(env));
+            if (t.values.length != simlength){
+                throw new IllegalArgumentException("Output length does not match input length");
+            }
         }
-        System.out.println(inputs);
     }
 }
 

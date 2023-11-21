@@ -10,15 +10,16 @@ class Environment {
     
     public Boolean getVariable(String name){
 		Boolean value = variableValues.get(name);
-		System.out.println(this.toString());
-		System.out.println("Getting variable " + name);
+		//System.out.println(this.toString());
+		//System.out.println("Getting variable " + name);
 		if (value == null) { System.err.println("Variable not defined: "+name); System.exit(-1); }
 		return value;
     }
 
 
     public Boolean hasVariable(String name){
-	Boolean v = variableValues.get(name); 
+	Boolean v = variableValues.get(name);
+
 	return (v != null);	
     }
     
