@@ -60,7 +60,7 @@ class Signal extends Expr{
     public boolean eval(Environment env){
 
         if (varname.equals(Singleton.getInstance().getStr())){
-            throw new IllegalArgumentException("Circular definitio of " + varname);
+            throw new IllegalArgumentException("Circular definition of " + varname);
         }
         if (!Singleton.getInstance().getEnvironment().hasVariable(varname)){
 
