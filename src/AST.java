@@ -63,7 +63,6 @@ class Signal extends Expr{
             throw new IllegalArgumentException("Circular definitio of " + varname);
         }
         if (!Singleton.getInstance().getEnvironment().hasVariable(varname)){
-            System.out.println(Singleton.getInstance().getEnvironment() + "\n\n\n");
 
             throw new IllegalArgumentException("Variable " + varname + " is not previously given a value");
         }
