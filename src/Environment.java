@@ -16,6 +16,7 @@ class Environment {
 		return value;
     }
 
+
     public Boolean hasVariable(String name){
 	Boolean v = variableValues.get(name); 
 	return (v != null);	

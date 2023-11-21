@@ -170,7 +170,7 @@ class AstMaker extends AbstractParseTreeVisitor<AST> implements hwVisitor<AST> {
 	Boolean[] tr=new Boolean[s.length()];
 	// for the simulation it is more convenient to work with
 	// Booleans, so converting the string s to an array of
-	// Booleans here:	
+	// Booleans here:
 	for(int i=0; i<s.length();i++)
 	    tr[i]=(s.charAt(i)=='1'); 
 	return new Trace(ctx.in.getText(),tr);
@@ -202,7 +202,7 @@ class AstMaker extends AbstractParseTreeVisitor<AST> implements hwVisitor<AST> {
 
     public AST visitNegation(hwParser.NegationContext ctx){
 		Negation neg = new Negation((Expr) visit(ctx.e));
-		System.out.println(neg);
+		// System.out.println(neg);
 		if (neg == null){
 			System.out.println("ERROR HERE");
 		}

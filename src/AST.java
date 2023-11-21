@@ -167,26 +167,22 @@ class Circuit extends AST{
         ///////////////////////////////////////////////////////////////
         //ERROR CHECKING
         if (siminputs.isEmpty()){
-            System.out.println("\nERROR: NO SIMINPUTS\n");
             System.exit(1);
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("ERROR: NO SIMINPUTS");
         }
         if (siminputs.size() != inputs.size()){ //Checks for matches
-            System.out.println("\nERROR: MISMATCH BETWEEN NUMBER OF SIMINPUTS AND NUMBER OF INPUTS\n");
             System.exit(1);
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("ERROR: MISMATCH BETWEEN NUMBER OF SIMINPUTS AND NUMBER OF INPUTS");
         }
         for (Trace t : siminputs){ //Checks "if the siminput is not defined"
             if (t.values[0] == null){
-                System.out.println("\nERROR: TRACE IS NULL\n");
-                throw new IllegalArgumentException();//
+                throw new IllegalArgumentException("ERROR: TRACE IS NULL");//
             }
         }
         int len = siminputs.get(0).values.length;
         for (Trace t : siminputs){
             if (t.values.length != len){
-                System.out.println("\nERROR: TRACES NOT SAME LENGTH\n");
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("ERROR: TRACES NOT SAME LENGTH");
             }
         }
         //////////////////////////////////////////////////////
@@ -200,6 +196,8 @@ class Circuit extends AST{
             latch.initialize(env);
         }
         for (Update update : updates){
+            Singleton.getInstance().getEnvironment().setVariable(update.name, false);
+            Singleton.getInstance().setStr(update.name);
             update.eval(env);
         }
         simlength = siminputs.get(0).values.length;
@@ -211,19 +209,16 @@ class Circuit extends AST{
     }
     void nextCycle(Environment env, int i){
         if (siminputs.isEmpty()){
-            System.out.println("\nERROR: NO SIMINPUTS\n");
             System.exit(1);
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("ERROR: NO SIMINPUTS");
         }
         if (siminputs.size() != inputs.size()){ //Checks for matches
-            System.out.println("\nERROR: MISMATCH BETWEEN NUMBER OF SIMINPUTS AND NUMBER OF INPUTS\n");
             System.exit(1);
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("ERROR: MISMATCH BETWEEN NUMBER OF SIMINPUTS AND NUMBER OF INPUTS");
         }
         for (Trace t : siminputs){ //Checks "if the siminput is not defined"
             if (t.values[i]== null){
-                System.out.println("\nERROR: TRACE IS NULL\n");
-                throw new IllegalArgumentException();//
+                throw new IllegalArgumentException("ERROR: TRACE IS NULL");//
             }
         }
         for (Trace t : siminputs){
@@ -250,7 +245,6 @@ class Circuit extends AST{
     }
 
     void runSimulator(Environment env){
-        System.out.println("Running run simulator ");
         initialize(env);
 
         for (int i = 0; i < simlength; i++) {
